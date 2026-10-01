@@ -578,8 +578,12 @@ function sendAction(action,payload){ send('action',Object.assign({action:action}
 function handleMessage(msg){
   var type=msg&&msg.type, payload=msg&&msg.payload;
   switch(type){
-    case 'hello_ok': state.userId=payload.userId; state.name=payload.name; state.avatar=payload.avatar;
-      state.balance=payload.balance; state.seat=payload.seat; updateMyProfile(); break;
+    case 'hello_ok':
+      state.userId=payload.userId; state.name=payload.name; state.avatar=payload.avatar;
+      state.balance=payload.balance; state.seat=payload.seat; updateMyProfile();
+      /* ✅ AUTO-SIT FIX: server কে বলো একটা seat দিতে */
+      if (payload.seat < 0) { send('action', { action: 'sit' }); }
+      break;
     case 'state': handleState(payload); break;
     case 'deal': play('deal'); animateDeal(payload); break;
     case 'shuffle': play('shuffle'); shuffleAnim(); break;
@@ -847,4 +851,4 @@ document.addEventListener('contextmenu',function(e){ if(e.target.closest('.mini-
 })();
 </script>
 </body>
-  </html>
+        </html>
