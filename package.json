@@ -1,7 +1,7 @@
 {
   "name": "teen-patti-multiplayer",
   "version": "1.0.0",
-  "description": "Real-time multiplayer Teen Patti web game",
+  "description": "Real-time multiplayer Teen Patti",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "express": "^4.19.2",
-    "ws": "^8.18.0",
-    "better-sqlite3": "^11.3.0"
+    "ws": "^8.18.0"
   }
 }
