@@ -579,7 +579,7 @@ wss.on('connection', (ws) => {
           table.players.push(player);
         }
 
-        /* ✅ SERVER-SIDE AUTO-SIT — সব নতুন player-কে অটোমেটিক seat দেওয়া হয় */
+        /* SERVER-SIDE AUTO-SIT */
         if (player.seat < 0) {
           const autoSeat = seatAvailable();
           if (autoSeat >= 0) {
@@ -603,7 +603,6 @@ wss.on('connection', (ws) => {
         send(ws, 'log_history', { log: table.log.slice(-25) });
         sendStateToAll();
 
-        /* রাউন্ড শুরু করার চেষ্টা */
         if (table.phase === 'waiting' || table.phase === 'finished') {
           setTimeout(function () { startRoundIfPossible(); }, 300);
         }
