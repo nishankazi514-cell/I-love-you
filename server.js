@@ -40,6 +40,7 @@ const DB = {
       name: String(name || 'Player').slice(0, 20),
       avatar: String(avatar || 'A').slice(0, 4),
       balance: 5000, level: 1, games_played: 0, wins: 0,
+      last_bonus: 0, last_add: 0,
       created_at: now(), updated_at: now()
     };
     store.users.push(u); saveStore(); return u;
@@ -76,6 +77,27 @@ const DB = {
       .sort((a, b) => b.wins - a.wins || b.balance - a.balance)
       .slice(0, Math.min(limit || 10, 50))
       .map(u => ({ name: u.name, avatar: u.avatar, level: u.level, balance: u.balance, wins: u.wins, games_played: u.games_played }));
+  },
+  claimDailyBonus(userId) {
+    const u = store.users.find(x => x.id === userId); if (!u) return { ok: false };
+    const dayMs = 24 * 60 * 60 * 1000;
+    const last = u.last_bonus || 0;
+    if (now() - last < dayMs) return { ok: false, nextIn: dayMs - (now() - last) };
+    u.last_bonus = now(); u.balance += 500; u.updated_at = now(); saveStore();
+    return { ok: true, amount: 500, balance: u.balance };
+  },
+  checkBonus(userId) {
+    const u = store.users.find(x => x.id === userId); if (!u) return false;
+    const dayMs = 24 * 60 * 60 * 1000;
+    return (now() - (u.last_bonus || 0)) >= dayMs;
+  },
+  addChips(userId) {
+    const u = store.users.find(x => x.id === userId); if (!u) return { ok: false };
+    const cdMs = 30 * 1000;
+    const last = u.last_add || 0;
+    if (now() - last < cdMs) return { ok: false, nextIn: cdMs - (now() - last) };
+    u.last_add = now(); u.balance += 1000; u.updated_at = now(); saveStore();
+    return { ok: true, amount: 1000, balance: u.balance };
   }
 };
 
@@ -132,6 +154,7 @@ const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 const app = express();
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/Deler.png', (req, res) => res.sendFile(path.join(__dirname, 'Deler.png')));
 app.get('/health', (req, res) => res.json({
   status: 'ok', uptime: Math.floor(process.uptime()),
   players: connectedCount(), seated: seatedPlayers().length,
@@ -196,7 +219,8 @@ function sendStateToAll() {
     turnSeat: table.turnSeat, turnDeadline: table.turnDeadline,
     serverNow: Date.now(), deckCount: table.deck.length,
     sideShowRequest: table.sideShowRequest, winner: table.winnerInfo,
-    handResults: table.handResults, roundId: table.roundId
+    handResults: table.handResults, roundId: table.roundId,
+    minPlayers: MIN_PLAYERS
   };
   for (const p of table.players) {
     if (!p.ws || p.ws.readyState !== p.ws.OPEN) continue;
@@ -218,7 +242,8 @@ function sendStateToAll() {
     state.you = {
       userId: p.userId, seat: p.seat, balance: p.balance,
       cards: p.cards, seenCards: p.seenCards, packed: p.packed,
-      canAct: table.phase === 'playing' && table.turnSeat === p.seat && !p.packed
+      canAct: table.phase === 'playing' && table.turnSeat === p.seat && !p.packed,
+      hasBonus: DB.checkBonus(p.userId)
     };
     send(p.ws, 'state', state);
   }
@@ -254,9 +279,11 @@ function startRound() {
   broadcast('sfx', { sound: 'roundstart' });
   broadcast('shuffle', { deckCount: table.deck.length });
   sendStateToAll();
+
   const sorted = seatedPlayers().slice().sort((a, b) => a.seat - b.seat);
   const seq = [];
   for (let c = 0; c < 3; c++) for (const p of sorted) seq.push({ seat: p.seat, cardIdx: c });
+
   table.phase = 'dealing';
   let i = 0;
   const dealNext = () => {
@@ -318,6 +345,12 @@ function advanceTurn() {
   }
   if (table.chaalCount > 40) { resolveShowdown(); return; }
   table.turnSeat = nextActiveSeatAfter(table.turnSeat);
+  const nextP = bySeat(table.turnSeat);
+  if (nextP && nextP.balance < BASE_BET) {
+    pushLog({ kind: 'action', text: nextP.name + ' auto-packed (no balance)' });
+    doPack(nextP);
+    return;
+  }
   resetTurnTimer();
   sendStateToAll();
 }
@@ -356,6 +389,7 @@ function handleAction(ws, player, action, payload) {
     }
     return;
   }
+
   if (action === 'chat') {
     const text = String((payload && payload.text) || '').slice(0, 200).trim();
     if (!text) return;
@@ -365,13 +399,37 @@ function handleAction(ws, player, action, payload) {
     broadcast('chat', { userId: player.userId, name: player.name, avatar: player.avatar, text, ts: t });
     return;
   }
+
   if (action === 'emoji') {
     const e = String((payload && payload.emoji) || '').slice(0, 8);
     if (!e) return;
     broadcast('emoji', { seat: player.seat, emoji: e, name: player.name, ts: Date.now() });
     return;
   }
+
   if (action === 'leave_table') { leaveTable(player); sendStateToAll(); return; }
+
+  if (action === 'add_chips') {
+    const res = DB.addChips(player.userId);
+    if (!res.ok) { send(ws, 'error', { code: 'cooldown', nextIn: res.nextIn }); return; }
+    player.balance = res.balance;
+    pushLog({ kind: 'action', text: player.name + ' added ' + res.amount + ' chips' });
+    broadcast('sfx', { sound: 'chip' });
+    sendStateToAll();
+    send(ws, 'chips_added', { amount: res.amount, balance: res.balance });
+    return;
+  }
+
+  if (action === 'daily_bonus') {
+    const res = DB.claimDailyBonus(player.userId);
+    if (!res.ok) { send(ws, 'error', { code: 'bonus_claimed' }); return; }
+    player.balance = res.balance;
+    pushLog({ kind: 'action', text: player.name + ' claimed daily bonus +500' });
+    broadcast('sfx', { sound: 'winner' });
+    sendStateToAll();
+    send(ws, 'bonus_claimed', { amount: res.amount, balance: res.balance });
+    return;
+  }
 
   if (table.phase !== 'playing') return;
   if (player.seat < 0) return;
@@ -386,16 +444,40 @@ function handleAction(ws, player, action, payload) {
   }
   if (action === 'pack') { doPack(player); return; }
 
+  if (action === 'all_in') {
+    const amt = player.balance;
+    if (amt <= 0) { send(ws, 'error', { code: 'no_balance' }); doPack(player); return; }
+    player.balance = 0;
+    table.pot += amt;
+    DB.setBalance(player.userId, 0);
+    if (amt > table.currentStake) table.currentStake = amt;
+    table.chaalCount += 3;
+    broadcast('chips', { seat: player.seat, amount: amt });
+    broadcast('sfx', { sound: 'chaal2x', seat: player.seat });
+    pushLog({ kind: 'action', text: player.name + ' ALL IN ' + amt });
+    sendStateToAll();
+    advanceTurn();
+    return;
+  }
+
   if (action === 'chaal' || action === 'chaal_2x') {
     const seen = player.seenCards;
-    let amt = table.currentStake;
-    if (seen) amt *= 2;
-    if (action === 'chaal_2x') amt *= 2;
+    let minAmt = table.currentStake;
+    if (seen) minAmt *= 2;
+    if (action === 'chaal_2x') minAmt *= 2;
+
+    let amt = minAmt;
+    if (action === 'chaal' && payload && typeof payload.amount === 'number') {
+      const customAmt = Math.floor(payload.amount);
+      if (customAmt >= minAmt && customAmt <= player.balance) amt = customAmt;
+    }
+
     if (player.balance < amt) { send(ws, 'error', { code: 'insufficient' }); doPack(player); return; }
     player.balance -= amt;
     table.pot += amt;
     DB.setBalance(player.userId, player.balance);
-    if (action === 'chaal_2x') table.currentStake = amt / (seen ? 2 : 1);
+    if (action === 'chaal_2x') table.currentStake = Math.floor(amt / (seen ? 2 : 1));
+    else if (amt > minAmt) table.currentStake = Math.floor(amt / (seen ? 2 : 1));
     table.chaalCount++;
     broadcast('chips', { seat: player.seat, amount: amt });
     broadcast('sfx', { sound: action === 'chaal_2x' ? 'chaal2x' : 'chaal', seat: player.seat });
@@ -404,6 +486,7 @@ function handleAction(ws, player, action, payload) {
     advanceTurn();
     return;
   }
+
   if (action === 'side_show') {
     const act = activePlayers();
     if (act.length < 3) { send(ws, 'error', { code: 'sideshow_unavailable' }); return; }
@@ -429,6 +512,7 @@ function handleAction(ws, player, action, payload) {
     }, 10000);
     return;
   }
+
   if (action === 'side_show_response') {
     const req = table.sideShowRequest;
     if (!req || req.toSeat !== player.seat) return;
@@ -456,6 +540,7 @@ function handleAction(ws, player, action, payload) {
     advanceTurn();
     return;
   }
+
   if (action === 'show') {
     if (activePlayers().length < 2) { send(ws, 'error', { code: 'show_unavailable' }); return; }
     player.revealed = true;
@@ -463,6 +548,7 @@ function handleAction(ws, player, action, payload) {
     return;
   }
 }
+
 function resolveShowdown() {
   table.phase = 'showdown';
   clearTimers();
@@ -579,7 +665,6 @@ wss.on('connection', (ws) => {
           table.players.push(player);
         }
 
-        /* SERVER-SIDE AUTO-SIT */
         if (player.seat < 0) {
           const autoSeat = seatAvailable();
           if (autoSeat >= 0) {
@@ -598,7 +683,8 @@ wss.on('connection', (ws) => {
           userId: user.id, name: user.name, avatar: user.avatar,
           balance: user.balance, level: user.level,
           gamesPlayed: user.games_played, wins: user.wins,
-          seat: player.seat
+          seat: player.seat,
+          hasBonus: DB.checkBonus(user.id)
         });
         send(ws, 'log_history', { log: table.log.slice(-25) });
         sendStateToAll();
@@ -618,7 +704,8 @@ wss.on('connection', (ws) => {
           name: u.name, avatar: u.avatar, level: u.level, balance: u.balance,
           gamesPlayed: u.games_played, wins: u.wins,
           winRate: u.games_played ? Math.round((u.wins / u.games_played) * 100) : 0,
-          seat: player.seat
+          seat: player.seat,
+          hasBonus: DB.checkBonus(u.id)
         });
       } else if (type === 'get_history') {
         send(ws, 'history', { items: DB.recentHistory(20) });
