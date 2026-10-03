@@ -15,6 +15,19 @@ body{background:radial-gradient(ellipse at 50% 0%,#2a1050 0%,#0a0514 60%),radial
 .hidden{display:none!important}
 button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none}
 
+#splash{position:fixed;inset:0;z-index:2000;background:radial-gradient(circle at 50% 45%,#3d1a6e 0%,#120724 55%,#05010a 100%);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .5s;pointer-events:none}
+#splash.hide{opacity:0;pointer-events:none}
+#splash .logo{font-size:64px;filter:drop-shadow(0 0 30px rgba(245,196,81,.9));animation:splashPop .9s cubic-bezier(.2,1.2,.4,1)}
+@keyframes splashPop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+#splash .title{margin-top:12px;font-size:26px;color:var(--gold);letter-spacing:1px;font-weight:800;
+  text-shadow:0 0 20px rgba(245,196,81,.7);animation:splashFade 1s .3s both}
+#splash .sub{margin-top:6px;font-size:12px;opacity:.7;letter-spacing:3px;text-transform:uppercase;animation:splashFade 1s .5s both}
+#splash .spin{margin-top:28px;width:32px;height:32px;border:3px solid rgba(245,196,81,.25);
+  border-top-color:var(--gold);border-radius:50%;animation:spinner 1s linear infinite}
+@keyframes spinner{to{transform:rotate(360deg)}}
+@keyframes splashFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
 #login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;
   background:radial-gradient(circle at 50% 40%,#3d1a6e 0%,#120724 60%,#05010a 100%);z-index:1000}
 .login-card{width:100%;max-width:380px;background:linear-gradient(160deg,rgba(60,26,110,.9),rgba(20,10,35,.95));
@@ -49,19 +62,19 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
 .phase-label{font-size:12px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;font-weight:700}
 #table-wrap{position:relative;flex:1;min-height:0;overflow:hidden}
 
-/* ===== DEALER (full body, small size, clear view) ===== */
+/* ===== DEALER (uses Deler.png) ===== */
 #dealer-wrap{position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:min(155px,42vw);height:min(175px,48vw);
+  width:min(180px,48vw);height:min(120px,32vw);overflow:hidden;
   z-index:1;display:flex;justify-content:center;align-items:flex-start;pointer-events:none}
-#dealer-glow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:90%;height:55%;
+#dealer-glow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:85%;height:60%;
   background:radial-gradient(ellipse at 50% 100%,rgba(245,196,81,.45) 0%,transparent 70%);
   filter:blur(14px);z-index:0;pointer-events:none}
-#dealer-img{width:100%;height:100%;object-fit:contain;display:block;position:relative;z-index:1;
+#dealer-img{width:100%;height:100%;object-fit:cover;object-position:center top;
+  display:block;position:relative;z-index:1;
   filter:drop-shadow(0 8px 24px rgba(245,196,81,.35)) drop-shadow(0 0 40px rgba(120,60,200,.4));
   animation:dealerFloat 4s ease-in-out infinite}
 @keyframes dealerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
 
-/* ===== BOARD (center table) ===== */
 #board{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
   width:min(360px,90vw);height:min(240px,62vw);z-index:2;pointer-events:none}
 .board-rim{position:absolute;inset:0;border-radius:50%;
@@ -87,7 +100,6 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
   text-shadow:0 0 14px rgba(245,196,81,.5);
   position:absolute;bottom:14%;left:50%;transform:translateX(-50%);white-space:nowrap}
 
-/* ===== DECK (52 cards on board in front of dealer) ===== */
 #deck-area{position:absolute;top:27.5%;left:50%;transform:translateX(-50%);
   width:42px;height:58px;z-index:4;pointer-events:auto}
 .deck-card{position:absolute;inset:0;background:linear-gradient(135deg,#7a0f1a 0%,#b8862a 100%);
@@ -108,8 +120,8 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
 
 #seats{position:absolute;inset:0;z-index:6;pointer-events:none}
 .seat{position:absolute;width:46%;max-width:200px;pointer-events:auto;transition:transform .3s}
-.seat[data-seat="0"]{top:24%;left:6px}
-.seat[data-seat="1"]{top:24%;right:6px}
+.seat[data-seat="0"]{top:22%;left:6px}
+.seat[data-seat="1"]{top:22%;right:6px}
 .seat[data-seat="2"]{bottom:4%;left:6px}
 .seat[data-seat="3"]{bottom:4%;right:6px}
 .seat-cards{display:flex;gap:2px;justify-content:center;margin-bottom:4px;min-height:var(--ch);position:relative}
@@ -123,7 +135,11 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
 .seat-profile.packed{opacity:.5}
 .seat-profile.disconnected{filter:grayscale(.7)}
 .seat-avatar{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.4);display:flex;align-items:center;
-  justify-content:center;font-size:17px;flex-shrink:0;border:2px solid rgba(245,196,81,.5)}
+  justify-content:center;font-size:17px;flex-shrink:0;border:2px solid rgba(245,196,81,.5);position:relative}
+.seat-avatar.ring::after{content:"";position:absolute;inset:-4px;border-radius:50%;
+  border:2px solid transparent;border-top-color:var(--gold);border-right-color:var(--gold);
+  animation:ringSpin 1.4s linear infinite;box-shadow:0 0 12px rgba(245,196,81,.6)}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
 .seat-info{min-width:0;flex:1}
 .seat-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seat-meta{display:flex;gap:5px;font-size:10px;opacity:.9;align-items:center;margin-top:1px}
@@ -170,6 +186,14 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
   box-shadow:0 0 10px rgba(245,196,81,.9);transition:transform .65s cubic-bezier(.5,0,.4,1),opacity .65s;z-index:30}
 .fx-emoji{position:absolute;font-size:28px;animation:emojiFloat 1.8s forwards;z-index:30;pointer-events:none}
 @keyframes emojiFloat{0%{transform:translateY(0) scale(.6);opacity:0}20%{opacity:1;transform:translateY(-10px) scale(1.1)}100%{transform:translateY(-120px) scale(1.3);opacity:0}}
+.fx-trail{position:absolute;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle,#ffe27a 0%,rgba(245,196,81,0) 70%);
+  pointer-events:none;z-index:35;animation:trailFade .4s forwards}
+@keyframes trailFade{to{opacity:0;transform:scale(.3)}}
+
+.confetti{position:fixed;top:-20px;width:8px;height:12px;z-index:800;pointer-events:none;
+  animation:confettiFall linear forwards}
+@keyframes confettiFall{to{transform:translateY(110vh) rotate(720deg);opacity:.2}}
 
 #controls{position:relative;z-index:40;background:linear-gradient(0deg,rgba(10,5,20,.98) 20%,rgba(10,5,20,.7) 100%);
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-top:1px solid rgba(245,196,81,.25);
@@ -185,20 +209,34 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
 .my-cards-inline .mini-card{width:32px!important;height:46px!important}
 .my-cards-inline .mini-card .front .r{font-size:11px}
 .my-cards-inline .mini-card .front .s{font-size:13px}
+#add-chips-btn{background:linear-gradient(180deg,#1a8a4a,#0a4a24);padding:5px 9px;border-radius:20px;
+  font-size:10px;font-weight:800;border:1px solid rgba(255,255,255,.2);white-space:nowrap}
+#add-chips-btn:disabled{opacity:.4}
 
-#action-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:6px}
-.action-btn{position:relative;padding:8px 2px;border-radius:10px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;font-size:9px;font-weight:800;letter-spacing:.5px;
-  transition:transform .1s,opacity .2s;border:1px solid rgba(255,255,255,.1);min-height:52px}
+#bet-selector{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;
+  padding:5px 8px;background:rgba(0,0,0,.35);border-radius:12px;border:1px solid rgba(245,196,81,.2)}
+#bet-selector .bet-label{font-size:10px;letter-spacing:2px;color:var(--gold)}
+#bet-selector button{width:30px;height:30px;border-radius:50%;background:rgba(245,196,81,.15);
+  border:1px solid rgba(245,196,81,.4);font-size:16px;font-weight:800;color:var(--gold);
+  display:flex;align-items:center;justify-content:center}
+#bet-selector button:active{transform:scale(.92)}
+#bet-amount-display{font-size:15px;font-weight:800;color:#fff;min-width:60px;text-align:center;
+  text-shadow:0 0 8px rgba(245,196,81,.7)}
+
+#action-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:6px}
+.action-btn{position:relative;padding:7px 2px;border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-size:8px;font-weight:800;letter-spacing:.3px;
+  transition:transform .1s,opacity .2s;border:1px solid rgba(255,255,255,.1);min-height:50px}
 .action-btn:active{transform:scale(.94)}
 .action-btn:disabled{opacity:.35;filter:grayscale(.6)}
-.ab-icon{font-size:15px;line-height:1}
+.ab-icon{font-size:14px;line-height:1}
 .ab-label{margin-top:2px}
-.ab-sub{font-size:9px;color:rgba(255,255,255,.85)}
+.ab-sub{font-size:8px;color:rgba(255,255,255,.85)}
 .action-btn.pack{background:linear-gradient(180deg,#555,#2a2a2a)}
 .action-btn.sideshow{background:linear-gradient(180deg,#2a6ed6,#1a3a80)}
 .action-btn.chaal{background:linear-gradient(180deg,#1a8a4a,#0a4a24)}
 .action-btn.chaal2x{background:linear-gradient(180deg,#d4841a,#8a4a0a)}
+.action-btn.allin{background:linear-gradient(180deg,#c0392b,#7a1a10)}
 .action-btn.show{background:linear-gradient(180deg,#b8862a,#7a4a10)}
 .action-btn.pulse{animation:btnGlow 1s infinite}
 @keyframes btnGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,196,81,.7)}50%{box-shadow:0 0 0 6px rgba(245,196,81,0)}}
@@ -259,6 +297,12 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
 .modal-actions{display:flex;gap:8px;margin-top:16px}
 .modal-actions .btn{flex:1}
 
+#bonus-modal .modal-card{animation:bonusPop .5s cubic-bezier(.2,1.2,.4,1)}
+@keyframes bonusPop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.bonus-amount{font-size:36px;font-weight:900;color:var(--gold);margin:10px 0;
+  text-shadow:0 0 20px rgba(245,196,81,.9);animation:bonusBounce 1s infinite}
+@keyframes bonusBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
 #toast-layer{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 200px);left:50%;transform:translateX(-50%);
   z-index:300;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
 .toast{background:rgba(0,0,0,.85);border:1px solid rgba(245,196,81,.4);padding:8px 16px;border-radius:20px;
@@ -266,11 +310,18 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
 .toast.err{border-color:#e74c3c;background:rgba(80,10,10,.9)}
 @keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
 
-@media (max-width:400px){:root{--cw:42px;--ch:62px}.seat-name{font-size:11px}.ab-label{font-size:8px}}
+@media (max-width:400px){:root{--cw:42px;--ch:62px}.seat-name{font-size:11px}.ab-label{font-size:7px}}
 @media (min-width:600px){:root{--cw:56px;--ch:82px}.seat{width:40%;max-width:240px}}
 </style>
 </head>
 <body>
+
+<div id="splash">
+  <div class="logo">🃏</div>
+  <div class="title">Royal Teen Patti</div>
+  <div class="sub">Loading Table...</div>
+  <div class="spin"></div>
+</div>
 
 <div id="login-screen">
   <div class="login-card">
@@ -302,8 +353,7 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
   <div id="table-wrap">
     <div id="dealer-wrap">
       <div id="dealer-glow"></div>
-      <img id="dealer-img" alt="Dealer" />
-      <div id="dealer-label">DEALER</div>
+      <img id="dealer-img" src="/Deler.png" alt="Dealer" />
     </div>
 
     <div id="board">
@@ -340,6 +390,17 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
       </div>
     </div>
 
+    <div id="bonus-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3>🎉 Daily Bonus!</h3>
+        <p style="font-size:13px;opacity:.85">Welcome back! You get free chips today.</p>
+        <div class="bonus-amount">+500 🪙</div>
+        <div class="modal-actions">
+          <button id="bonus-claim" class="btn btn-gold">Claim Now</button>
+        </div>
+      </div>
+    </div>
+
     <div id="turn-banner" class="hidden">
       <div id="turn-text">YOUR TURN</div>
       <div id="turn-timer">15</div>
@@ -354,13 +415,23 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
         <div class="my-balance">🪙 <span id="my-balance">0</span></div>
       </div>
       <div class="my-cards-inline" id="my-cards-inline"></div>
+      <button id="add-chips-btn" title="Add free chips">+1000</button>
+    </div>
+
+    <div id="bet-selector">
+      <span class="bet-label">BET</span>
+      <button id="bet-minus" type="button">−</button>
+      <span id="bet-amount-display">100</span>
+      <button id="bet-plus" type="button">+</button>
+      <button id="bet-reset" type="button" style="width:auto;padding:0 10px;border-radius:16px;font-size:10px">RESET</button>
     </div>
 
     <div id="action-bar">
       <button class="action-btn pack" data-action="pack"><span class="ab-icon">✖</span><span class="ab-label">PACK</span></button>
-      <button class="action-btn sideshow" data-action="side_show"><span class="ab-icon">👁</span><span class="ab-label">SIDE SHOW</span></button>
+      <button class="action-btn sideshow" data-action="side_show"><span class="ab-icon">👁</span><span class="ab-label">SIDE</span></button>
       <button class="action-btn chaal" data-action="chaal"><span class="ab-icon">💰</span><span class="ab-label">CHAAL</span><span class="ab-sub" id="chaal-amt">100</span></button>
-      <button class="action-btn chaal2x" data-action="chaal_2x"><span class="ab-icon">🔥</span><span class="ab-label">2X CHAAL</span><span class="ab-sub" id="chaal2x-amt">200</span></button>
+      <button class="action-btn chaal2x" data-action="chaal_2x"><span class="ab-icon">🔥</span><span class="ab-label">2X</span><span class="ab-sub" id="chaal2x-amt">200</span></button>
+      <button class="action-btn allin" data-action="all_in"><span class="ab-icon">💥</span><span class="ab-label">ALL IN</span></button>
       <button class="action-btn show" data-action="show"><span class="ab-icon">🃏</span><span class="ab-label">SHOW</span></button>
     </div>
 
@@ -452,39 +523,7 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff;background:none
 var $ = function(s){ return document.querySelector(s); };
 var $$ = function(s){ return document.querySelectorAll(s); };
 
-/* ===== DEALER IMAGE (inline SVG) ===== */
-var DEALER_SVG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 340" preserveAspectRatio="xMidYMid meet">' +
-'<defs>' +
-'<radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f5c451" stop-opacity="0.55"/><stop offset="60%" stop-color="#f5c451" stop-opacity="0"/></radialGradient>' +
-'<linearGradient id="suit" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a0a2e"/><stop offset="100%" stop-color="#05010a"/></linearGradient>' +
-'<linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a1a5e"/><stop offset="100%" stop-color="#1a0a2e"/></linearGradient>' +
-'<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffe27a"/><stop offset="50%" stop-color="#f5c451"/><stop offset="100%" stop-color="#b8862a"/></linearGradient>' +
-'</defs>' +
-'<circle cx="150" cy="170" r="140" fill="url(#halo)"/>' +
-'<path d="M55 340 Q55 230 95 205 L205 205 Q245 230 245 340 Z" fill="url(#suit)"/>' +
-'<path d="M95 205 L150 260 L205 205 L205 240 L150 290 L95 240 Z" fill="url(#shirt)" opacity="0.6"/>' +
-'<path d="M95 205 L150 260 L205 205" stroke="url(#gold)" stroke-width="2" fill="none"/>' +
-'<rect x="132" y="180" width="36" height="35" rx="10" fill="#e8c39b"/>' +
-'<circle cx="150" cy="140" r="55" fill="#f0cda6"/>' +
-'<path d="M97 135 Q100 78 150 78 Q200 78 203 135 Q200 105 150 100 Q100 105 97 135 Z" fill="#1a1018"/>' +
-'<ellipse cx="97" cy="145" rx="7" ry="12" fill="#e8c39b"/>' +
-'<ellipse cx="203" cy="145" rx="7" ry="12" fill="#e8c39b"/>' +
-'<ellipse cx="130" cy="138" rx="6" ry="7" fill="#fff"/>' +
-'<ellipse cx="170" cy="138" rx="6" ry="7" fill="#fff"/>' +
-'<circle cx="130" cy="139" r="3" fill="#1a1a1a"/>' +
-'<circle cx="170" cy="139" r="3" fill="#1a1a1a"/>' +
-'<circle cx="131" cy="138" r="1" fill="#fff"/>' +
-'<circle cx="171" cy="138" r="1" fill="#fff"/>' +
-'<path d="M120 126 Q130 122 140 126" stroke="#3a1a10" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
-'<path d="M160 126 Q170 122 180 126" stroke="#3a1a10" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
-'<path d="M150 140 L146 158 Q150 162 154 158 Z" fill="#d9a878" opacity="0.8"/>' +
-'<path d="M132 170 Q150 184 168 170" stroke="#8a3a2a" stroke-width="3" fill="none" stroke-linecap="round"/>' +
-'<path d="M135 205 L150 218 L165 205 L165 220 L150 232 L135 220 Z" fill="url(#gold)"/>' +
-'<path d="M110 205 Q150 240 190 205" stroke="url(#gold)" stroke-width="2" fill="none" opacity="0.8"/>' +
-'</svg>');
-
-/* ===== AUDIO (Web Audio API) ===== */
+/* ===== AUDIO ===== */
 var actx = null;
 var soundOn = localStorage.getItem('tp_sound') !== 'off';
 var musicOn = localStorage.getItem('tp_music') !== 'off';
@@ -544,6 +583,7 @@ var SFX = {
   warning: function(){ tone({freq:1200,dur:0.06,type:'square',vol:0.14}); },
   roundstart: function(){ [523,659,784].forEach(function(f,i){ setTimeout(function(){ tone({freq:f,dur:0.13,type:'triangle',vol:0.15}); }, i*110); }); },
   winner: function(){ [523,659,784,1046].forEach(function(f,i){ setTimeout(function(){ tone({freq:f,dur:0.18,type:'triangle',vol:0.2}); }, i*130); }); },
+  bonus: function(){ [659,880,1046,1318].forEach(function(f,i){ setTimeout(function(){ tone({freq:f,dur:0.15,type:'triangle',vol:0.18}); }, i*90); }); },
   error: function(){ tone({freq:220,dur:0.16,type:'sawtooth',vol:0.14}); }
 };
 function play(name) {
@@ -572,6 +612,9 @@ function stopMusic() {
   if (!musicNode) return;
   try { for (var i = 0; i < musicNode.oscs.length; i++) { musicNode.oscs[i].o.stop(); musicNode.oscs[i].lfo.stop(); } } catch (e) {}
   musicNode = null;
+}
+function haptic(ms) {
+  if (navigator.vibrate) { try { navigator.vibrate(ms || 20); } catch (e) {} }
 }
 
 /* ===== CARDS ===== */
@@ -639,6 +682,43 @@ function escapeHtml(s) {
     return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' })[c];
   });
 }
+function confettiBurst() {
+  var colors = ['#f5c451', '#ffd700', '#ff6b6b', '#4ecdc4', '#a29bfe', '#feca57'];
+  for (var i = 0; i < 40; i++) {
+    (function(idx) {
+      setTimeout(function() {
+        var c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = (Math.random() * 100) + '%';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+        c.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+        document.body.appendChild(c);
+        setTimeout(function() { c.remove(); }, 3600);
+      }, idx * 40);
+    })(i);
+  }
+}
+function cardTrail(fromEl, toEl) {
+  var layer = $('#fx-layer'); if (!layer) return;
+  var r1 = fromEl.getBoundingClientRect(), r2 = toEl.getBoundingClientRect();
+  var steps = 6;
+  for (var i = 0; i < steps; i++) {
+    (function(idx) {
+      setTimeout(function() {
+        var t = idx / steps;
+        var x = r1.left + r1.width/2 + (r2.left + r2.width/2 - r1.left - r1.width/2) * t;
+        var y = r1.top + r1.height/2 + (r2.top + r2.height/2 - r1.top - r1.height/2) * t;
+        var dot = document.createElement('div');
+        dot.className = 'fx-trail';
+        dot.style.left = (x - 3) + 'px';
+        dot.style.top = (y - 3) + 'px';
+        layer.appendChild(dot);
+        setTimeout(function() { dot.remove(); }, 400);
+      }, idx * 60);
+    })(i);
+  }
+}
 
 /* ===== STATE ===== */
 var AVATARS = ['🙂','😎','🤠','👑','🦁','🐯','🐼','🦊','🤴','👸','😺','🐲'];
@@ -646,7 +726,8 @@ var state = {
   token: null, userId: null, name: '', avatar: '🙂',
   seat: -1, balance: 0, cards: [], seenCards: false, packed: false,
   publicState: null, ws: null, connected: false, reconnectTimer: null,
-  timerRAF: null, lastTurnSeat: -1, warned: {}
+  timerRAF: null, lastTurnSeat: -1, warned: {},
+  betAmount: 100
 };
 
 function getToken() {
@@ -670,6 +751,7 @@ function buildAvatars() {
       state.avatar = a;
       $$('#avatar-choices button').forEach(function(x){ x.classList.remove('active'); });
       b.classList.add('active');
+      haptic(15);
     };
     wrap.appendChild(b);
   });
@@ -684,6 +766,7 @@ function initLogin() {
     localStorage.setItem('tp_name', name);
     localStorage.setItem('tp_avatar', state.avatar);
     resumeAudio();
+    haptic(30);
     connect();
     $('#login-screen').classList.add('hidden');
     $('#game-screen').classList.remove('hidden');
@@ -748,6 +831,9 @@ function handleMessage(msg) {
       state.seat = payload.seat;
       updateMyProfile();
       if (payload.seat < 0) send('action', { action: 'sit' });
+      if (payload.hasBonus) {
+        setTimeout(function() { $('#bonus-modal').classList.remove('hidden'); }, 800);
+      }
       break;
     case 'state': handleState(payload); break;
     case 'deal': play('deal'); animateDeal(payload); break;
@@ -756,6 +842,7 @@ function handleMessage(msg) {
       state.seenCards = true;
       state.cards = payload.cards;
       play('flip');
+      haptic(15);
       renderMyCards();
       break;
     case 'chips': play('chip'); flyChips(payload.seat); break;
@@ -793,6 +880,17 @@ function handleMessage(msg) {
     case 'profile': fillProfile(payload); break;
     case 'history': fillHistory(payload.items); break;
     case 'ranking': fillRanking(payload.items); break;
+    case 'chips_added':
+      toast('+' + payload.amount + ' chips added!');
+      haptic(50);
+      play('chip');
+      break;
+    case 'bonus_claimed':
+      toast('🎉 +' + payload.amount + ' daily bonus!');
+      haptic(80);
+      play('bonus');
+      confettiBurst();
+      break;
     case 'left_table':
       toast('You left the table');
       state.seat = -1;
@@ -804,6 +902,7 @@ function handleMessage(msg) {
 }
 function handleError(payload) {
   play('error');
+  haptic(30);
   var map = {
     not_your_turn: 'Not your turn',
     packed: 'You are packed',
@@ -811,7 +910,10 @@ function handleError(payload) {
     sideshow_unavailable: 'Side Show unavailable',
     table_full: 'Table is full',
     show_unavailable: 'Show unavailable',
-    not_authenticated: 'Not authenticated'
+    not_authenticated: 'Not authenticated',
+    cooldown: 'Wait before adding more chips',
+    bonus_claimed: 'Daily bonus already claimed',
+    no_balance: 'No balance, packed'
   };
   toast(map[payload && payload.code] || 'Invalid action', 'error');
 }
@@ -838,12 +940,22 @@ function handleState(s) {
   var isSeen = state.seenCards, base = s.currentStake || 100;
   $('#chaal-amt').textContent = isSeen ? base * 2 : base;
   $('#chaal2x-amt').textContent = isSeen ? base * 4 : base * 2;
+
+  var minBet = isSeen ? base * 2 : base;
+  if (state.betAmount < minBet) state.betAmount = minBet;
+  if (state.betAmount > state.balance) state.betAmount = state.balance;
+  $('#bet-amount-display').textContent = state.betAmount;
+
+  var lowBal = state.balance < 200;
+  $('#add-chips-btn').style.display = lowBal ? 'flex' : 'none';
+
   renderSeats(s);
   updateMyProfile();
   renderMyCards();
   var yourTurn = s.phase === 'playing' && s.turnSeat === state.seat && !state.packed;
   if (yourTurn && state.lastTurnSeat !== state.seat) {
     play('yourturn');
+    haptic(40);
     flashTurnBanner();
   }
   state.lastTurnSeat = s.turnSeat;
@@ -855,8 +967,10 @@ function handleState(s) {
   if (s.phase === 'playing') startTimerTick(); else stopTimerTick();
   if (s.sideShowRequest && s.sideShowRequest.toSeat === state.seat) showSSRequest(s.sideShowRequest);
   else if (!s.sideShowRequest) hideSSModal();
-  if (s.winner && (s.phase === 'finished' || s.phase === 'showdown')) showResult(s.winner);
-  else hideResult();
+  if (s.winner && (s.phase === 'finished' || s.phase === 'showdown')) {
+    showResult(s.winner);
+    if (s.winner.seats && s.winner.seats.indexOf(state.seat) >= 0) confettiBurst();
+  } else hideResult();
 }
 function renderSeats(s) {
   var wrap = $('#seats');
@@ -884,7 +998,9 @@ function renderSeats(s) {
     prof.classList.toggle('active', isTurn);
     prof.classList.toggle('packed', !!p.packed);
     prof.classList.toggle('disconnected', !p.connected);
-    el.querySelector('.seat-avatar').textContent = p.avatar || '🙂';
+    var avatarEl = el.querySelector('.seat-avatar');
+    avatarEl.textContent = p.avatar || '🙂';
+    avatarEl.classList.toggle('ring', isTurn);
     el.querySelector('.seat-name').textContent = (isYou ? '⭐ ' : '') + p.name;
     el.querySelector('.seat-balance').textContent = '🪙 ' + (p.balance || 0);
     el.querySelector('.seat-vip').textContent = p.level >= 3 ? '👑' : '';
@@ -924,6 +1040,7 @@ function animateDeal(payload) {
   var seatEl = document.querySelector('.seat[data-seat="' + payload.seat + '"] .seat-cards');
   var deck = $('#deck-area');
   if (!seatEl || !deck) return;
+  cardTrail(deck, seatEl);
   var layer = $('#fx-layer');
   var r1 = deck.getBoundingClientRect(), r2 = seatEl.getBoundingClientRect();
   var tmp = document.createElement('div');
@@ -977,6 +1094,7 @@ function startTimerTick() {
     if (yourTurn && rem <= 5 && rem > 0 && !state.warned[rem]) {
       state.warned[rem] = true;
       play('warning');
+      haptic(20);
     }
     state.timerRAF = requestAnimationFrame(tick);
   };
@@ -997,6 +1115,7 @@ function showResult(w) {
 function hideResult() { $('#result-banner').classList.add('hidden'); }
 function handleShowdown(payload) {
   play('show');
+  haptic(40);
   if (payload && payload.results) {
     payload.results.forEach(function(r) {
       var w = document.querySelector('.seat[data-seat="' + r.seat + '"] .seat-cards');
@@ -1011,6 +1130,7 @@ function showSSRequest(req) {
   if (req.toSeat === state.seat) {
     $('#sideshow-modal').classList.remove('hidden');
     $('#ss-text').textContent = (req.fromName || 'Player') + ' wants a Side Show';
+    haptic(60);
   } else if (req.fromSeat === state.seat) {
     toast('Waiting for ' + (req.toName || 'opponent') + ' to respond...');
   }
@@ -1074,25 +1194,68 @@ function updateConnStatus(ok) {
   el.textContent = ok ? 'Connected' : 'Reconnecting...';
   el.className = ok ? 'conn-ok' : 'conn-bad';
 }
+
+/* ===== BET SELECTOR ===== */
+function changeBet(delta) {
+  var s = state.publicState;
+  if (!s) return;
+  var isSeen = state.seenCards;
+  var base = s.currentStake || 100;
+  var minBet = isSeen ? base * 2 : base;
+  var maxBet = state.balance;
+  var step = Math.max(50, Math.floor(base / 2));
+  var next = state.betAmount + delta * step;
+  if (next < minBet) next = minBet;
+  if (next > maxBet) next = maxBet;
+  state.betAmount = Math.floor(next);
+  $('#bet-amount-display').textContent = state.betAmount;
+  haptic(10);
+}
+
+/* ===== BIND UI ===== */
 function bindUI() {
   $$('#action-bar .action-btn').forEach(function(b) {
     b.addEventListener('click', function() {
-      resumeAudio(); play('click');
-      sendAction(b.dataset.action);
+      resumeAudio(); play('click'); haptic(20);
+      var act = b.dataset.action;
+      if (act === 'chaal') {
+        sendAction('chaal', { amount: state.betAmount });
+      } else {
+        sendAction(act);
+      }
     });
   });
   $$('#quick-bar .quick-btn').forEach(function(b) {
     b.addEventListener('click', function() {
-      resumeAudio(); play('click');
+      resumeAudio(); play('click'); haptic(15);
       if (b.dataset.quick === 'see') sendAction('see_cards');
       else if (b.dataset.quick) sendAction('chat', { text: b.dataset.quick });
       else if (b.dataset.emoji) sendAction('emoji', { emoji: b.dataset.emoji });
     });
   });
-  $('#ss-accept').onclick = function() { play('click'); sendAction('side_show_response', { accept: true }); hideSSModal(); };
-  $('#ss-reject').onclick = function() { play('click'); sendAction('side_show_response', { accept: false }); hideSSModal(); };
-  $('#profile-btn').onclick = function() { play('click'); openPanel('profile'); };
-  $('#menu-btn').onclick = function() { play('click'); openPanel('settings'); };
+  $('#bet-minus').onclick = function() { changeBet(-1); };
+  $('#bet-plus').onclick = function() { changeBet(1); };
+  $('#bet-reset').onclick = function() {
+    var s = state.publicState; if (!s) return;
+    var isSeen = state.seenCards;
+    var base = s.currentStake || 100;
+    state.betAmount = isSeen ? base * 2 : base;
+    $('#bet-amount-display').textContent = state.betAmount;
+    haptic(10);
+  };
+  $('#add-chips-btn').onclick = function() {
+    resumeAudio(); play('click'); haptic(30);
+    sendAction('add_chips');
+  };
+  $('#bonus-claim').onclick = function() {
+    play('click'); haptic(50);
+    sendAction('daily_bonus');
+    $('#bonus-modal').classList.add('hidden');
+  };
+  $('#ss-accept').onclick = function() { play('click'); haptic(30); sendAction('side_show_response', { accept: true }); hideSSModal(); };
+  $('#ss-reject').onclick = function() { play('click'); haptic(30); sendAction('side_show_response', { accept: false }); hideSSModal(); };
+  $('#profile-btn').onclick = function() { play('click'); haptic(15); openPanel('profile'); };
+  $('#menu-btn').onclick = function() { play('click'); haptic(15); openPanel('settings'); };
   $('#panel-close').onclick = function() { play('click'); closePanel(); };
   $$('.ptab').forEach(function(t) {
     t.onclick = function() { play('click'); activateTab(t.dataset.tab); };
@@ -1168,10 +1331,14 @@ function bindUI() {
   document.addEventListener('click', unlock, { once: true });
 }
 
+/* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', function() {
-  $('#dealer-img').src = DEALER_SVG;
   initLogin();
   bindUI();
+  setTimeout(function() {
+    var sp = $('#splash');
+    if (sp) { sp.classList.add('hide'); setTimeout(function() { sp.remove(); }, 600); }
+  }, 1400);
   window.addEventListener('beforeunload', function() {
     try { state.ws && state.ws.close(); } catch (e) {}
   });
